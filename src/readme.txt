@@ -1,9 +1,6 @@
 
 ===================================================================
-  TS 26.104 
-  R99	V3.4.0 2002-02
-  REL-4 V4.4.0 2003-03
-  REL-5 V5.1.0 2003-03
+  TS 26.104 V4.0.0 2000-12
   3GPP AMR Floating-point Speech Codec  
 ===================================================================
 
@@ -11,27 +8,21 @@
 This readme.txt shortly explains the compilation and use of the AMR floating 
 point C-code. The package contains C-source files for the AMR floating-point 
 speech encoder and optimized fixed-point speech decoder. The optimized 
-fixed-point speech decoder is bit-exact with 3GPP TS 26.073 fixed-point 
-speech decoder version 4.1.0.
+fixed-point speech decoder is bit-exact with the existing ETSI fixed-point 
+speech decoder version 7.4.0.
 
 COMPILING THE SOFTWARE
 ======================
-
-By default the encoder output and decoder input are formatted according to the
-MIME file storage format used e.g. by the MMS service. The specification of
-this format can be found in RFC 3267 "Real-Time Transport Protocol(RTP) Payload
-Format and File Storage Format for the Adaptive Multi-Rate (AMR) and Adaptive
-Multi-Rate Wideband (AMR-WB) Audio Codecs", sections 5.1 and 5.3.
-
 If you want to compile a package with an output compatible with the existing 
-3GPP AMR fixed-point C-code and its file format, define "ETSI" 
+ETSI AMR fixed-point C-code and its file format, define "ETSI" 
 during compiling (in the compiler's command line). Hence the output 
 of the encoder and the input of the decoder will use the ETSI "word"-
-format (one bit per word) used by the official 3GPP AMR fixed-point codec.
+format (one bit per word) used by the official ETSI fixed-point codec 
+(V.7.4.0).
 
-If you want to compile a package with an output compatible with the AMR IF2
-format of the 3GPP specification TS 26.101 "Mandatory speech processing
-functions; AMR speech codec frame structure", defining "IF2" during compiling.
+If you do not define "ETSI" the codec will use packed 8-bit octets 
+and the file format is in line with the AMR IF2 format of the 3GPP specification 
+TS 26.101 "Mandatory speech processing functions; AMR speech codec frame structure".
 
 NOTE: When using the ETSI stream format the user must take care that the mode index
 and the frame type are valid, else the decoder will crash. There is no error 
@@ -54,6 +45,7 @@ sp_enc.c
 interf_enc.h
 interf_rom.h
 rom_enc.h
+rom_dec.h
 sp_enc.h
 typedef.h
 
@@ -81,7 +73,7 @@ encoder [-dtx] -modefile=mode_file speech_file bitstream_file
 <mode> = MR475, MR515, MR59, MR67, MR74, MR795, MR102 or MR122
 
 [mode_file] is optional and the format is the same as in the mode file 
-of the corresponding 3GPP TS 26.073 fixed-point C-code. The file is 
+of the corresponding ETSI AMR fixed-point C-code v. 7.4.0. The file is 
 an ascii-file containing one mode per line.
 
 Usage of the "decoder" program is as follows: 
@@ -94,9 +86,3 @@ HISTORY
 v. 3.0.0	24.8.00
 v. 3.1.0	19.12.00
 v. 4.0.0	19.12.00
-R99   V. 3.2.0  13.06.01
-REL-4 V. 4.1.0  13.06.01
-R99   V. 3.3.0  01.09.01
-REL-4 V. 4.2.0  01.09.01
-R99   V. 3.4.0  08.02.02
-REL-4 V. 4.3.0  08.02.02

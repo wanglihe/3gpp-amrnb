@@ -1,10 +1,7 @@
 /*
  * ===================================================================
- *  TS 26.104
- *  R99   V3.5.0 2003-03
- *  REL-4 V4.4.0 2003-03
- *  REL-5 V5.1.0 2003-03
- *  3GPP AMR Floating-point Speech Codec
+ *  TS 26.104 V3.0.0 2000-08
+ *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
  */
@@ -43,8 +40,8 @@ enum Mode { MR475 = 0,
 
 /* Declaration recieved frame types */
 enum RXFrameType { RX_SPEECH_GOOD = 0,
-                   RX_SPEECH_DEGRADED,
-                   RX_ONSET,
+                   RX_SPEECH_PROBABLY_DEGRADED,
+                   RX_SPARE,
                    RX_SPEECH_BAD,
                    RX_SID_FIRST,
                    RX_SID_UPDATE,

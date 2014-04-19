@@ -1,5 +1,7 @@
-#
-#
+#===================================================================
+#  TS 26.104 V3.0.0 2000-08
+#  3GPP AMR Floating-point Speech Codec  
+#===================================================================
 #
 #      File             : makefile.lnx
 #      Purpose          : gcc makefile for AMR floating point

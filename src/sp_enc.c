@@ -1,10 +1,7 @@
 /*
  * ===================================================================
- *  TS 26.104
- *  R99   V3.5.0 2003-03
- *  REL-4 V4.4.0 2003-03
- *  REL-5 V5.1.0 2003-03
- *  3GPP AMR Floating-point Speech Codec
+ *  TS 26.104 V3.0.0 2000-08
+ *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
  */
@@ -619,7 +616,7 @@ static void Az_lsp( Float32 a[], Float32 lsp[], Float32 old_lsp[] )
 {
    Word32 i, j, nf, ip;
    Float32 xlow, ylow, xhigh, yhigh, xmid, ymid, xint;
-   Float32 y;
+   Float32 x, y;
    Float32 *coef;
    Float32 f1[6], f2[6];
 
@@ -674,6 +671,7 @@ static void Az_lsp( Float32 a[], Float32 lsp[], Float32 old_lsp[] )
           * Linear interpolation
           * xint = xlow - ylow*(xhigh-xlow)/(yhigh-ylow)
           */
+         x = xhigh - xlow;
          y = yhigh - ylow;
 
          if ( y == 0 ) {
@@ -4503,7 +4501,7 @@ static void cor_h( Float32 h[], Float32 sign[], Float32 rr[][L_CODE] )
 static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
       Word32 codvec[] )
 {
-   Float32 ps0, ps1, psk, alp, alp0, alp1, alpk, sq, sq1;
+   Float32 ps, ps0, ps1, psk, alp, alp0, alp1, alpk, sq, sq1;
    Word32 i0, i1, ix, i;
    Word16 ipos[2];
    Word16 track1;
@@ -4518,8 +4516,8 @@ static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
 
    /* main loop: try 2x4  tracks	*/
    for ( track1 = 0; track1 < 2; track1++ ) {
-      ipos[0] = startPos[( subNr << 1 ) + ( track1 << 3 )];
-      ipos[1] = startPos[( subNr << 1 ) + 1 + ( track1 << 3 )];
+      ipos[0] = startPos[( subNr <<1 )+( track1 << 3 )];
+      ipos[1] = startPos[( subNr <<1 )+1 + ( track1 << 3 )];
 
       /* i0 loop: try 8 positions	*/
       for ( i0 = ipos[0]; i0 < L_CODE; i0 += STEP ) {
@@ -4529,6 +4527,7 @@ static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
          /* i1 loop: 8 positions */
          sq = -1;
          alp = 1;
+         ps = 0;
          ix = ipos[1];
 
          for ( i1 = ipos[1]; i1 < L_CODE; i1 += STEP ) {
@@ -4538,6 +4537,7 @@ static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
 
             if ( ( alp * sq1 ) > ( sq * alp1 ) ) {
                sq = sq1;
+               ps = ps1;
                alp = alp1;
                ix = i1;
             }
@@ -4731,7 +4731,7 @@ static void search_2i40_11bits( Float32 dn[], Float32 rr[][L_CODE], Word32
       codvec[] )
 {
    Float64 alpk, alp, alp0, alp1;
-   Float32 psk, ps0, ps1, sq, sq1;
+   Float32 ps, psk, ps0, ps1, sq, sq1;
    Word32 i, i0, i1, ix = 0;
    Word16 ipos[2];
    Word16 track1, track2;
@@ -4765,6 +4765,7 @@ static void search_2i40_11bits( Float32 dn[], Float32 rr[][L_CODE], Word32
              */
             sq = -1;
             alp = 1;
+            ps = 0;
             ix = ipos[1];
 
             for ( i1 = ipos[1]; i1 < L_CODE; i1 += STEP ) {
@@ -4777,6 +4778,7 @@ static void search_2i40_11bits( Float32 dn[], Float32 rr[][L_CODE], Word32
 
                if ( ( alp * sq1 ) > ( sq * alp1 ) ) {
                   sq = sq1;
+                  ps = ps1;
                   alp = alp1;
                   ix = i1;
                }
@@ -5669,9 +5671,11 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
    Float32 rrv[L_CODE];
    Float32 psk, ps, ps0, ps1, ps2, sq, sq2, alpk, alp, alp0, alp1, alp2;
    Float32 *p_r, *p_r0, *p_r1, *p_r2, *p_r3, *p_r4, *p_r5, *p_r6, *p_r7, *p_r8;
-   Float32 *p_rrv, *p_rrv0, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
+   Float32 *p_rrv, *p_rrv0, *p_rrv_max, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
    Word32 i0, i1, i2, i3, i4, i5, i6, i7, j, k, ia, ib, i, pos;
 
+
+   p_rrv_max = &rrv[L_CODE];
    p_dn_max = &dn[39];
 
    /* fix i0 on maximum of correlation position */
@@ -5754,8 +5758,8 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
                sq = sq2;
                ps = ps2;
                alp = alp2;
-               ia = p_dn0 - dn;
-               ib = p_dn - dn;
+               ia = ( Word16 )( p_dn0 - dn );
+               ib = ( Word16 )( p_dn - dn );
             }
             p_rrv += 4;
             p_dn += 4;
@@ -5831,8 +5835,8 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
                sq = sq2;
                ps = ps2;
                alp = alp2;
-               ia = p_dn0 - dn;
-               ib = p_dn - dn;
+               ia = ( Word16 )( p_dn0 - dn );
+               ib = ( Word16 )( p_dn - dn );
             }
             p_dn += 4;
             p_rrv += 4;
@@ -5922,8 +5926,8 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
                sq = sq2;
                ps = ps2;
                alp = alp2;
-               ia = p_dn0 - dn;
-               ib = p_dn - dn;
+               ia = ( Word16 )( p_dn0 - dn );
+               ib = ( Word16 )( p_dn - dn );
             }
             p_dn += 4;
             p_rrv += 4;
@@ -6310,9 +6314,11 @@ static void search_10i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
    Float32 psk, ps, ps0, ps1, ps2, sq, sq2, alpk, alp, alp0, alp1, alp2;
    Float32 *p_r, *p_r0, *p_r1, *p_r2, *p_r3, *p_r4, *p_r5, *p_r6, *p_r7, *p_r8,
          *p_r9, *p_r10;
-   Float32 *p_rrv, *p_rrv0, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
+   Float32 *p_rrv, *p_rrv0, *p_rrv_max, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
    Word32 i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, j, k, ia, ib, i, pos;
 
+
+   p_rrv_max = &rrv[L_CODE];
    p_dn_max = &dn[39];
 
    /* fix i0 on maximum of correlation position */
@@ -6879,7 +6885,7 @@ static void q_p( Word16 *ind, Word32 n )
  *
  *    where y(n) = v(n) * h(n) is the filtered adaptive codebook vector
  *    and Gp' is the quantified adaptive codebook gain. This is done
- *    already in function cl_ltp.
+ *    allready in function cl_ltp.
  *
  *    If c(k) is the algebraic codevector at index k, then
  *    the algebraic codebook is searched by maximizing the term:
@@ -7224,6 +7230,10 @@ static void gc_pred( Word32 *past_qua_en, enum Mode mode, Float32 *code,
 
       Log2( ener, &exp, &frac );
       ener = ( ( exp - 30 ) << 16 ) + ( frac << 1 );
+
+
+
+
 
       ener_tmp = 44 * qua_gain_code_MR122[past_qua_en[0]];
       ener_tmp += 37 * qua_gain_code_MR122[past_qua_en[1]];
@@ -8501,10 +8511,8 @@ static void gainQuant( enum Mode mode, Word32 even_subframe, Word32 *
           */
 
          gcode0 = (Float32)Pow2( exp, frac );
-         /* saturation at decoder */
-         if (gcode0 > 2047.9375F) gcode0 = 2047.9375F;
 
-         *gain_cod = (Float32)(Dotproduct40( xn2, y2 ) / ( Dotproduct40( y2, y2 )+ 0.01F ));
+         *gain_cod = (Float32)(Dotproduct40( xn2, y2 ) / ( Dotproduct40( y2, y2 )+0.01F ));
 
          if ( *gain_cod < 0 )
             *gain_cod = 0.0F;

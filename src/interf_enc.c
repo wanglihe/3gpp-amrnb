@@ -1,10 +1,7 @@
 /*
  * ===================================================================
- *  TS 26.104
- *  R99   V3.5.0 2003-03
- *  REL-4 V4.4.0 2003-03
- *  REL-5 V5.1.0 2003-03
- *  3GPP AMR Floating-point Speech Codec
+ *  TS 26.104 V3.0.0 2000-08
+ *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
  */
@@ -35,29 +32,32 @@
  * Declare structure types
  */
 /* Declaration transmitted frame types */
-enum TXFrameType { TX_SPEECH_GOOD = 0,
-                   TX_SID_FIRST,
-                   TX_SID_UPDATE,
-                   TX_NO_DATA,
-                   TX_SPEECH_DEGRADED,
-                   TX_SPEECH_BAD,
-                   TX_SID_BAD,
-                   TX_ONSET,
-                   TX_N_FRAMETYPES     /* number of frame types */
+enum TXFrameType
+{
+   TX_SPEECH = 0, TX_SID_FIRST, TX_SID_UPDATE, TX_NO_DATA, TX_N_FRAMETYPES
+         /* number of frame types */
 };
 
 /* Declaration of interface structure */
-typedef struct
+typedef
+
+struct
 {
    Word16 sid_update_counter;   /* Number of frames since last SID */
    Word16 sid_handover_debt;   /* Number of extra SID_UPD frames to schedule */
    Word32 dtx;
-   enum TXFrameType prev_ft;   /* Type of the previous frame */
-   void *encoderState;   /* Points encoder state structure */
-} enc_interface_State;
 
+
+   enum TXFrameType prev_ft;   /* Type of the previous frame */
+
+   void *encoderState;   /* Points encoder state structure */
+
+
+}enc_interface_State;
 
 #ifdef ETSI
+
+
 /*
  * Prm2Bits
  *
@@ -181,186 +181,6 @@ static void Prm2Bits( enum Mode mode, Word16 prm[], Word16 bits[] )
 
 #else
 
-#ifndef IF2
-
-/*
- * EncoderMMS
- *
- *
- * Parameters:
- *    mode                 I: AMR mode
- *    param                I: Encoder output parameters
- *    stream               O: packed speech frame
- *    frame_type           I: frame type (DTX)
- *    speech_mode          I: speech mode (DTX)
- *
- * Function:
- *    Pack encoder output parameters to octet structure according
- *    importance table and AMR file storage format according to
- *    RFC 3267.
- * Returns:
- *    number of octets
- */
-static int EncoderMMS( enum Mode mode, Word16 *param, UWord8 *stream, enum
-      TXFrameType frame_type, enum Mode speech_mode )
-{
-   Word32 j = 0, k;
-   Word16 *mask;
-
-   memset(stream, 0, block_size[mode]);
-
-   *stream = toc_byte[mode];
-   stream++;
-
-   if ( mode == 15 ) {
-      return 1;
-   }
-   else if ( mode == MRDTX ) {
-      mask = order_MRDTX;
-
-      for ( j = 1; j < 36; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-
-      /* add SID type information */
-      if ( frame_type == TX_SID_UPDATE )
-         *stream += 0x01;
-      *stream <<= 3;
-
-      /* speech mode indication */
-      *stream += ( unsigned char )(speech_mode & 0x0007);
-
-	  *stream <<= 1;
-
-      /* don't shift at the end of the function */
-      return 6;
-   }
-   else if ( mode == MR475 ) {
-      mask = order_MR475;
-
-      for ( j = 1; j < 96; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-   else if ( mode == MR515 ) {
-      mask = order_MR515;
-
-      for ( j = 1; j < 104; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-   else if ( mode == MR59 ) {
-      mask = order_MR59;
-
-      for ( j = 1; j < 119; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-   else if ( mode == MR67 ) {
-      mask = order_MR67;
-
-      for ( j = 1; j < 135; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-   else if ( mode == MR74 ) {
-      mask = order_MR74;
-
-      for ( j = 1; j < 149; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-   else if ( mode == MR795 ) {
-      mask = order_MR795;
-
-      for ( j = 1; j < 160; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-   else if ( mode == MR102 ) {
-      mask = order_MR102;
-
-      for ( j = 1; j < 205; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-   else if ( mode == MR122 ) {
-      mask = order_MR122;
-
-      for ( j = 1; j < 245; j++ ) {
-         if ( param[ * mask] & *( mask + 1 ) )
-            *stream += 0x01;
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-   }
-
-   /* shift remaining bits */
-   if ( k = j % 8 )	*stream <<= ( 8 - k );
-   return( (int)block_size[mode] );
-}
-
-#else
 
 /*
  * Encoder3GPP
@@ -543,7 +363,7 @@ static int Encoder3GPP( enum Mode mode, Word16 *param, UWord8 *stream, enum
    return( (int)block_size[mode] );
 }
 #endif
-#endif
+
 
 /*
  * Sid_Sync_reset
@@ -562,7 +382,7 @@ static void Sid_Sync_reset( enc_interface_State *st )
 {
    st->sid_update_counter = 3;
    st->sid_handover_debt = 0;
-   st->prev_ft = TX_SPEECH_GOOD;
+   st->prev_ft = TX_SPEECH;
 }
 
 
@@ -686,7 +506,7 @@ int Encoder_Interface_Encode( void *st, enum Mode mode, Word16 *speech,
    if ( used_mode == MRDTX ) {
       s->sid_update_counter--;
 
-      if ( s->prev_ft == TX_SPEECH_GOOD ) {
+      if ( s->prev_ft == TX_SPEECH ) {
          txFrameType = TX_SID_FIRST;
          s->sid_update_counter = 3;
       }
@@ -714,7 +534,7 @@ int Encoder_Interface_Encode( void *st, enum Mode mode, Word16 *speech,
    }
    else {
       s->sid_update_counter = 8;
-      txFrameType = TX_SPEECH_GOOD;
+      txFrameType = TX_SPEECH;
    }
    s->prev_ft = txFrameType;
 
@@ -724,13 +544,8 @@ int Encoder_Interface_Encode( void *st, enum Mode mode, Word16 *speech,
    }
 
 #ifndef ETSI
-#ifdef IF2
    return Encoder3GPP( used_mode, prm, serial, txFrameType, mode );
 
-#else
-   return EncoderMMS( used_mode, prm, serial, txFrameType, mode );
-
-#endif
 #else
 
    Prm2Bits( used_mode, prm, &serial[1] );
