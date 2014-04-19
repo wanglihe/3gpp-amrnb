@@ -1,8 +1,8 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  R99   V3.3.0 2001-09
- *  REL-4 V4.2.0 2001-09
+ *  R99   V3.4.0 2002-02
+ *  REL-4 V4.3.0 2002-02
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -457,7 +457,7 @@ static enum DTXStateType rx_dtx_handler( dtx_decState *st, enum RXFrameType fram
       st->since_last_sid += 1;
 
       /* no update of sid parameters in DTX for a long while */
-      if ( st->since_last_sid > DTX_MAX_EMPTY_THRESH ) {
+      if ((frame_type != RX_SID_UPDATE) & ( st->since_last_sid > DTX_MAX_EMPTY_THRESH )) {
          newState = DTX_MUTE;
       }
    }
@@ -485,6 +485,9 @@ static enum DTXStateType rx_dtx_handler( dtx_decState *st, enum RXFrameType fram
 
    if ( table_DTX[frame_type] ) {
       encState = DTX;
+      if( ( frame_type == RX_NO_DATA ) & ( newState == SPEECH ) ) {
+         encState = SPEECH;
+      }
    }
 
    if ( encState == SPEECH ) {
@@ -1838,7 +1841,7 @@ static void dtx_dec( dtx_decState *st, Word32 *mem_syn, D_plsfState *lsfState,
          }
       }
       st->since_last_sid = 0;
-      memcpy( st->lsp_old, st->lsp, M <<2 );
+      memcpy( st->lsp_old, st->lsp, M << 2 );
       st->old_log_en = st->log_en;
 
       /* subtract 1/8 in Q11 i.e -6/8 dB */
