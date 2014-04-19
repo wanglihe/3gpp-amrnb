@@ -1,10 +1,9 @@
 
 ===================================================================
  TS 26.104
- R99   V3.5.0 2003-03
- REL-4 V4.5.0 2003-06
- REL-5 V5.3.0 2003-12
- REL-6 V6.0.0 2003-12
+ REL-5 V5.4.0 2004-03
+ REL-6 V6.1.0 2004-03
+ REL-7 V7.0.0 2007-06
  3GPP AMR Floating-point Speech Codec
 ===================================================================
 
@@ -13,7 +12,7 @@ This readme.txt shortly explains the compilation and use of the AMR floating
 point C-code. The package contains C-source files for the AMR floating-point 
 speech encoder and optimized fixed-point speech decoder. The optimized 
 fixed-point speech decoder is bit-exact with 3GPP TS 26.073 fixed-point 
-speech decoder version 4.1.0.
+speech decoder version 7.0.0.
 
 COMPILING THE SOFTWARE
 ======================
@@ -106,3 +105,8 @@ REL-4 V. 4.4.0	14.01.03
 REL-5 V. 5.1.0	14.01.03
 REL-4 V. 4.5.0	12.06.03
 REL-5 V. 5.2.0	12.06.03
+REL-5 V. 5.3.0  17.12.03
+REL-6 V. 6.0.0  17.12.03
+REL-5 V. 5.4.0  05.03.04
+REL-6 V. 6.1.0  05.03.04
+REL-7 V. 7.0.0	05.06.07
