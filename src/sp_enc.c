@@ -1,9 +1,9 @@
 /*
  * ===================================================================
- *  TS 26.104 
- *  R99   V3.2.0 2001-06
- *  REL-4 V4.1.0 2001-06
- *  3GPP AMR Floating-point Speech Codec  
+ *  TS 26.104
+ *  R99   V3.3.0 2001-09
+ *  REL-4 V4.2.0 2001-09
+ *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
  */
@@ -618,7 +618,7 @@ static void Az_lsp( Float32 a[], Float32 lsp[], Float32 old_lsp[] )
 {
    Word32 i, j, nf, ip;
    Float32 xlow, ylow, xhigh, yhigh, xmid, ymid, xint;
-   Float32 x, y;
+   Float32 y;
    Float32 *coef;
    Float32 f1[6], f2[6];
 
@@ -673,7 +673,6 @@ static void Az_lsp( Float32 a[], Float32 lsp[], Float32 old_lsp[] )
           * Linear interpolation
           * xint = xlow - ylow*(xhigh-xlow)/(yhigh-ylow)
           */
-         x = xhigh - xlow;
          y = yhigh - ylow;
 
          if ( y == 0 ) {
@@ -4503,7 +4502,7 @@ static void cor_h( Float32 h[], Float32 sign[], Float32 rr[][L_CODE] )
 static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
       Word32 codvec[] )
 {
-   Float32 ps, ps0, ps1, psk, alp, alp0, alp1, alpk, sq, sq1;
+   Float32 ps0, ps1, psk, alp, alp0, alp1, alpk, sq, sq1;
    Word32 i0, i1, ix, i;
    Word16 ipos[2];
    Word16 track1;
@@ -4518,8 +4517,8 @@ static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
 
    /* main loop: try 2x4  tracks	*/
    for ( track1 = 0; track1 < 2; track1++ ) {
-      ipos[0] = startPos[( subNr <<1 )+( track1 << 3 )];
-      ipos[1] = startPos[( subNr <<1 )+1 + ( track1 << 3 )];
+      ipos[0] = startPos[( subNr << 1 ) + ( track1 << 3 )];
+      ipos[1] = startPos[( subNr << 1 ) + 1 + ( track1 << 3 )];
 
       /* i0 loop: try 8 positions	*/
       for ( i0 = ipos[0]; i0 < L_CODE; i0 += STEP ) {
@@ -4529,7 +4528,6 @@ static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
          /* i1 loop: 8 positions */
          sq = -1;
          alp = 1;
-         ps = 0;
          ix = ipos[1];
 
          for ( i1 = ipos[1]; i1 < L_CODE; i1 += STEP ) {
@@ -4539,7 +4537,6 @@ static void search_2i40_9bits( Word16 subNr, Float32 dn[], Float32 rr[][L_CODE],
 
             if ( ( alp * sq1 ) > ( sq * alp1 ) ) {
                sq = sq1;
-               ps = ps1;
                alp = alp1;
                ix = i1;
             }
@@ -4733,7 +4730,7 @@ static void search_2i40_11bits( Float32 dn[], Float32 rr[][L_CODE], Word32
       codvec[] )
 {
    Float64 alpk, alp, alp0, alp1;
-   Float32 ps, psk, ps0, ps1, sq, sq1;
+   Float32 psk, ps0, ps1, sq, sq1;
    Word32 i, i0, i1, ix = 0;
    Word16 ipos[2];
    Word16 track1, track2;
@@ -4767,7 +4764,6 @@ static void search_2i40_11bits( Float32 dn[], Float32 rr[][L_CODE], Word32
              */
             sq = -1;
             alp = 1;
-            ps = 0;
             ix = ipos[1];
 
             for ( i1 = ipos[1]; i1 < L_CODE; i1 += STEP ) {
@@ -4780,7 +4776,6 @@ static void search_2i40_11bits( Float32 dn[], Float32 rr[][L_CODE], Word32
 
                if ( ( alp * sq1 ) > ( sq * alp1 ) ) {
                   sq = sq1;
-                  ps = ps1;
                   alp = alp1;
                   ix = i1;
                }
@@ -5673,11 +5668,9 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
    Float32 rrv[L_CODE];
    Float32 psk, ps, ps0, ps1, ps2, sq, sq2, alpk, alp, alp0, alp1, alp2;
    Float32 *p_r, *p_r0, *p_r1, *p_r2, *p_r3, *p_r4, *p_r5, *p_r6, *p_r7, *p_r8;
-   Float32 *p_rrv, *p_rrv0, *p_rrv_max, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
+   Float32 *p_rrv, *p_rrv0, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
    Word32 i0, i1, i2, i3, i4, i5, i6, i7, j, k, ia, ib, i, pos;
 
-
-   p_rrv_max = &rrv[L_CODE];
    p_dn_max = &dn[39];
 
    /* fix i0 on maximum of correlation position */
@@ -5760,8 +5753,8 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
                sq = sq2;
                ps = ps2;
                alp = alp2;
-               ia = ( Word16 )( p_dn0 - dn );
-               ib = ( Word16 )( p_dn - dn );
+               ia = p_dn0 - dn;
+               ib = p_dn - dn;
             }
             p_rrv += 4;
             p_dn += 4;
@@ -5837,8 +5830,8 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
                sq = sq2;
                ps = ps2;
                alp = alp2;
-               ia = ( Word16 )( p_dn0 - dn );
-               ib = ( Word16 )( p_dn - dn );
+               ia = p_dn0 - dn;
+               ib = p_dn - dn;
             }
             p_dn += 4;
             p_rrv += 4;
@@ -5928,8 +5921,8 @@ static void search_8i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
                sq = sq2;
                ps = ps2;
                alp = alp2;
-               ia = ( Word16 )( p_dn0 - dn );
-               ib = ( Word16 )( p_dn - dn );
+               ia = p_dn0 - dn;
+               ib = p_dn - dn;
             }
             p_dn += 4;
             p_rrv += 4;
@@ -6316,11 +6309,9 @@ static void search_10i40( Float32 dn[], Float32 rr[][L_CODE], Word32 ipos[],
    Float32 psk, ps, ps0, ps1, ps2, sq, sq2, alpk, alp, alp0, alp1, alp2;
    Float32 *p_r, *p_r0, *p_r1, *p_r2, *p_r3, *p_r4, *p_r5, *p_r6, *p_r7, *p_r8,
          *p_r9, *p_r10;
-   Float32 *p_rrv, *p_rrv0, *p_rrv_max, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
+   Float32 *p_rrv, *p_rrv0, *p_dn, *p_dn0, *p_dn1, *p_dn_max;
    Word32 i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, j, k, ia, ib, i, pos;
 
-
-   p_rrv_max = &rrv[L_CODE];
    p_dn_max = &dn[39];
 
    /* fix i0 on maximum of correlation position */

@@ -1,8 +1,8 @@
 
 ===================================================================
   TS 26.104 
-  R99	V3.2.0 2001-06
-  REL-4 V4.1.0 2001-06
+  R99	V3.3.0 2001-09
+  REL-4 V4.2.0 2001-09
   3GPP AMR Floating-point Speech Codec  
 ===================================================================
 
@@ -10,17 +10,17 @@
 This readme.txt shortly explains the compilation and use of the AMR floating 
 point C-code. The package contains C-source files for the AMR floating-point 
 speech encoder and optimized fixed-point speech decoder. The optimized 
-fixed-point speech decoder is bit-exact with the existing ETSI fixed-point 
-speech decoder version 7.4.0.
+fixed-point speech decoder is bit-exact with 3GPP TS 26.073 fixed-point 
+speech decoder version 4.0.0.
 
 COMPILING THE SOFTWARE
 ======================
 If you want to compile a package with an output compatible with the existing 
-ETSI AMR fixed-point C-code and its file format, define "ETSI" 
+3GPP AMR fixed-point C-code and its file format, define "ETSI" 
 during compiling (in the compiler's command line). Hence the output 
 of the encoder and the input of the decoder will use the ETSI "word"-
-format (one bit per word) used by the official ETSI fixed-point codec 
-(V.7.4.0).
+format (one bit per word) used by the official 3GPP AMR fixed-point codec 
+(V.4.0.0).
 
 If you do not define "ETSI" the codec will use packed 8-bit octets 
 and the file format is in line with the AMR IF2 format of the 3GPP specification 
@@ -47,7 +47,6 @@ sp_enc.c
 interf_enc.h
 interf_rom.h
 rom_enc.h
-rom_dec.h
 sp_enc.h
 typedef.h
 
@@ -75,7 +74,7 @@ encoder [-dtx] -modefile=mode_file speech_file bitstream_file
 <mode> = MR475, MR515, MR59, MR67, MR74, MR795, MR102 or MR122
 
 [mode_file] is optional and the format is the same as in the mode file 
-of the corresponding ETSI AMR fixed-point C-code v. 7.4.0. The file is 
+of the corresponding 3GPP TS 26.073 fixed-point C-code v.4.0.0. The file is 
 an ascii-file containing one mode per line.
 
 Usage of the "decoder" program is as follows: 
@@ -90,3 +89,5 @@ v. 3.1.0	19.12.00
 v. 4.0.0	19.12.00
 R99   V. 3.2.0  13.06.01
 REL-4 V. 4.1.0  13.06.01
+R99   V. 3.3.0  01.09.01
+REL-4 V. 4.2.0  01.09.01
