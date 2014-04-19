@@ -3,7 +3,7 @@
  *  TS 26.104
  *  R99   V3.5.0 2003-03
  *  REL-4 V4.5.0 2003-06
- *  REL-5 V5.2.0 2003-06
+ *  REL-5 V5.3.0 2003-12
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include "interf_dec.h"
+#include "sp_dec.h"
 #include "typedef.h"
 
 #ifndef ETSI
@@ -27,7 +28,8 @@ fprintf (stderr,
 "===================================================================\n"
 " TS 26.104                                                         \n"
 " R99   V3.5.0 2003-03                                              \n"
-" REL-4 V4.4.0 2003-03                                              \n"
+" REL-4 V4.5.0 2003-06                                              \n"
+" REL-5 V5.3.0 2003-12                                              \n"
 " 3GPP AMR Floating-point Speech Decoder                            \n"
 "===================================================================\n"
 );
