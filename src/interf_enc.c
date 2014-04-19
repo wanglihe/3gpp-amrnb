@@ -1,8 +1,9 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  R99   V3.4.0 2002-02
- *  REL-4 V4.3.0 2002-02
+ *  R99   V3.5.0 2003-03
+ *  REL-4 V4.4.0 2003-03
+ *  REL-5 V5.1.0 2003-03
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -180,6 +181,186 @@ static void Prm2Bits( enum Mode mode, Word16 prm[], Word16 bits[] )
 
 #else
 
+#ifndef IF2
+
+/*
+ * EncoderMMS
+ *
+ *
+ * Parameters:
+ *    mode                 I: AMR mode
+ *    param                I: Encoder output parameters
+ *    stream               O: packed speech frame
+ *    frame_type           I: frame type (DTX)
+ *    speech_mode          I: speech mode (DTX)
+ *
+ * Function:
+ *    Pack encoder output parameters to octet structure according
+ *    importance table and AMR file storage format according to
+ *    RFC 3267.
+ * Returns:
+ *    number of octets
+ */
+static int EncoderMMS( enum Mode mode, Word16 *param, UWord8 *stream, enum
+      TXFrameType frame_type, enum Mode speech_mode )
+{
+   Word32 j = 0, k;
+   Word16 *mask;
+
+   memset(stream, 0, block_size[mode]);
+
+   *stream = toc_byte[mode];
+   stream++;
+
+   if ( mode == 15 ) {
+      return 1;
+   }
+   else if ( mode == MRDTX ) {
+      mask = order_MRDTX;
+
+      for ( j = 1; j < 36; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+
+      /* add SID type information */
+      if ( frame_type == TX_SID_UPDATE )
+         *stream += 0x01;
+      *stream <<= 3;
+
+      /* speech mode indication */
+      *stream += ( unsigned char )(speech_mode & 0x0007);
+
+	  *stream <<= 1;
+
+      /* don't shift at the end of the function */
+      return 6;
+   }
+   else if ( mode == MR475 ) {
+      mask = order_MR475;
+
+      for ( j = 1; j < 96; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+   else if ( mode == MR515 ) {
+      mask = order_MR515;
+
+      for ( j = 1; j < 104; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+   else if ( mode == MR59 ) {
+      mask = order_MR59;
+
+      for ( j = 1; j < 119; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+   else if ( mode == MR67 ) {
+      mask = order_MR67;
+
+      for ( j = 1; j < 135; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+   else if ( mode == MR74 ) {
+      mask = order_MR74;
+
+      for ( j = 1; j < 149; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+   else if ( mode == MR795 ) {
+      mask = order_MR795;
+
+      for ( j = 1; j < 160; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+   else if ( mode == MR102 ) {
+      mask = order_MR102;
+
+      for ( j = 1; j < 205; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+   else if ( mode == MR122 ) {
+      mask = order_MR122;
+
+      for ( j = 1; j < 245; j++ ) {
+         if ( param[ * mask] & *( mask + 1 ) )
+            *stream += 0x01;
+         mask += 2;
+
+         if ( j % 8 )
+            *stream <<= 1;
+         else
+            stream++;
+      }
+   }
+
+   /* shift remaining bits */
+   if ( k = j % 8 )	*stream <<= ( 8 - k );
+   return( (int)block_size[mode] );
+}
+
+#else
 
 /*
  * Encoder3GPP
@@ -362,7 +543,7 @@ static int Encoder3GPP( enum Mode mode, Word16 *param, UWord8 *stream, enum
    return( (int)block_size[mode] );
 }
 #endif
-
+#endif
 
 /*
  * Sid_Sync_reset
@@ -543,8 +724,13 @@ int Encoder_Interface_Encode( void *st, enum Mode mode, Word16 *speech,
    }
 
 #ifndef ETSI
+#ifdef IF2
    return Encoder3GPP( used_mode, prm, serial, txFrameType, mode );
 
+#else
+   return EncoderMMS( used_mode, prm, serial, txFrameType, mode );
+
+#endif
 #else
 
    Prm2Bits( used_mode, prm, &serial[1] );

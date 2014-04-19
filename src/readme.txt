@@ -2,7 +2,8 @@
 ===================================================================
   TS 26.104 
   R99	V3.4.0 2002-02
-  REL-4 V4.3.0 2002-02
+  REL-4 V4.4.0 2003-03
+  REL-5 V5.1.0 2003-03
   3GPP AMR Floating-point Speech Codec  
 ===================================================================
 
@@ -15,15 +16,22 @@ speech decoder version 4.1.0.
 
 COMPILING THE SOFTWARE
 ======================
+
+By default the encoder output and decoder input are formatted according to the
+MIME file storage format used e.g. by the MMS service. The specification of
+this format can be found in RFC 3267 "Real-Time Transport Protocol(RTP) Payload
+Format and File Storage Format for the Adaptive Multi-Rate (AMR) and Adaptive
+Multi-Rate Wideband (AMR-WB) Audio Codecs", sections 5.1 and 5.3.
+
 If you want to compile a package with an output compatible with the existing 
 3GPP AMR fixed-point C-code and its file format, define "ETSI" 
 during compiling (in the compiler's command line). Hence the output 
 of the encoder and the input of the decoder will use the ETSI "word"-
 format (one bit per word) used by the official 3GPP AMR fixed-point codec.
 
-If you do not define "ETSI" the codec will use packed 8-bit octets 
-and the file format is in line with the AMR IF2 format of the 3GPP specification 
-TS 26.101 "Mandatory speech processing functions; AMR speech codec frame structure".
+If you want to compile a package with an output compatible with the AMR IF2
+format of the 3GPP specification TS 26.101 "Mandatory speech processing
+functions; AMR speech codec frame structure", defining "IF2" during compiling.
 
 NOTE: When using the ETSI stream format the user must take care that the mode index
 and the frame type are valid, else the decoder will crash. There is no error 
