@@ -1,10 +1,8 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  R99   V3.5.0 2003-03
- *  REL-4 V4.5.0 2003-06
- *  REL-5 V5.3.0 2003-12
- *  REL-6 V6.0.0 2003-12
+ *  REL-5 V5.4.0 2004-03
+ *  REL-6 V6.1.0 2004-03
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -8834,7 +8832,7 @@ static Word32 dtx_enc( Word16 *log_en_index, Float32 log_en_hist[], Float32
 
 
    /* VOX mode computation of SID parameters */
-   if ( ( compute_sid_flag != 0 ) || ( *log_en_index == 0 ) ) {
+   if ( ( compute_sid_flag != 0 ) ) {
    /*
     * compute new SID frame if safe i.e don't
     * compute immediately after a talk spurt

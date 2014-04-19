@@ -52,9 +52,9 @@ VAD=VAD1
 
 #
 # compiler flags (for normal, DEBUG compilation)
-# (add -DETSI for the regular ETSI format)
-CFLAGS_NORM  = -O4
-CFLAGS_DEBUG = -g -DDEBUG
+#
+CFLAGS_NORM  = -O4 -DETSI
+CFLAGS_DEBUG = -g -DDEBUG -DETSI
 
 CFLAGS = -Wall  -I. $(CFLAGS_$(MODE)) -D$(VAD)
 CFLAGSDEPEND = -MM $(CFLAGS)                    # for make depend
