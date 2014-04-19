@@ -1,9 +1,8 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  R99   V3.5.0 2003-03
- *  REL-4 V4.5.0 2003-06
- *  REL-5 V5.2.0 2003-06
+ *  R99   V3.4.0 2002-02
+ *  REL-4 V4.3.0 2002-02
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -5671,7 +5670,12 @@ void Speech_Decode_Frame( void *st, enum Mode mode, Word16 *parm, enum
 {
    Word32 Az_dec[AZ_SIZE];   /* Decoded Az for post-filter in 4 subframes*/
    Word32 synth_speech[L_FRAME];
+
+
+#ifndef NO13BIT
+
    Word32 i;
+#endif
 
    /* Synthesis */
    Decoder_amr( ( ( Speech_Decode_FrameState * ) st )->decoder_amrState, mode,
@@ -5683,15 +5687,13 @@ void Speech_Decode_Frame( void *st, enum Mode mode, Word16 *parm, enum
    Post_Process( ( ( Speech_Decode_FrameState * ) st )->postHP_state,
          synth_speech );
 
-for ( i = 0; i < L_FRAME; i++ ) {
 #ifndef NO13BIT
-      /* Truncate to 13 bits */
-      synth[i] = ( Word16 )( synth_speech[i] & 0xfff8 );
-#else
-      synth[i] = ( Word16 )( synth_speech[i]);
-#endif
-   }
 
+   /* Truncate to 13 bits */
+   for ( i = 0; i < L_FRAME; i++ ) {
+      synth[i] = ( Word16 )( synth_speech[i] & 0xfff8 );
+   }
+#endif
 
    return;
 }

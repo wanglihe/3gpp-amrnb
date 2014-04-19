@@ -1,8 +1,8 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  REL-4 V4.5.0 2003-06
- *  REL-5 V5.2.0 2003-06
+ *  R99   V3.4.0 2002-02
+ *  REL-4 V4.3.0 2002-02
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -174,193 +174,6 @@ static void Bits2Prm( enum Mode mode, Word16 bits[], Word16 prm[] )
 
 #else
 
-#ifndef IF2
-
-/*
- * DecoderMMS
- *
- *
- * Parameters:
- *    param             O: AMR parameters
- *    stream            I: input bitstream
- *    frame_type        O: frame type
- *    speech_mode       O: speech mode in DTX
- *
- * Function:
- *    AMR file storage format frame to decoder parameters
- *
- * Returns:
- *    mode              used mode
- */
-enum Mode DecoderMMS( Word16 *param, UWord8 *stream, enum RXFrameType
-                      *frame_type, enum Mode *speech_mode, Word16 *q_bit )
-{
-   enum Mode mode;
-   Word32 j;
-   Word16 *mask;
-
-
-   memset( param, 0, PRMNO_MR122 <<1 );
-   *q_bit = 0x01 & (*stream >> 2);
-   mode = 0x0F & (*stream >> 3);
-   stream++;
-
-   if ( mode == MRDTX ) {
-      mask = order_MRDTX;
-
-      for ( j = 1; j < 36; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-
-      /* get SID type bit */
-
-      *frame_type = RX_SID_FIRST;
-      if (*stream & 0x80)
-         *frame_type = RX_SID_UPDATE;
-
-      /* since there is update, use it */
-      /* *frame_type = RX_SID_UPDATE; */
-
-      /* speech mode indicator */
-	  *speech_mode = (*stream >> 4) && 0x07;
-
-   }
-   else if ( mode == 15 ) {
-      *frame_type = RX_NO_DATA;
-   }
-   else if ( mode == MR475 ) {
-      mask = order_MR475;
-
-      for ( j = 1; j < 96; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else if ( mode == MR515 ) {
-      mask = order_MR515;
-
-      for ( j = 1; j < 104; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else if ( mode == MR59 ) {
-      mask = order_MR59;
-
-      for ( j = 1; j < 119; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else if ( mode == MR67 ) {
-      mask = order_MR67;
-
-      for ( j = 1; j < 135; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else if ( mode == MR74 ) {
-      mask = order_MR74;
-
-      for ( j = 1; j < 149; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else if ( mode == MR795 ) {
-      mask = order_MR795;
-
-      for ( j = 1; j < 160; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else if ( mode == MR102 ) {
-      mask = order_MR102;
-
-      for ( j = 1; j < 205; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else if ( mode == MR122 ) {
-      mask = order_MR122;
-
-      for ( j = 1; j < 245; j++ ) {
-         if ( *stream & 0x80 )
-            param[ * mask] = ( short )( param[ * mask] + *( mask + 1 ) );
-         mask += 2;
-
-         if ( j % 8 )
-            *stream <<= 1;
-         else
-            stream++;
-      }
-      *frame_type = RX_SPEECH_GOOD;
-   }
-   else
-      *frame_type = RX_SPEECH_BAD;
-   return mode;
-}
-
-#else
 
 /*
  * Decoder3GPP
@@ -545,7 +358,7 @@ enum Mode Decoder3GPP( Word16 *param, UWord8 *stream, enum RXFrameType
    return mode;
 }
 #endif
-#endif
+
 
 /*
  * Decoder_Interface_reset
@@ -673,11 +486,6 @@ void Decoder_Interface_Decode( void *st,
    Word32 i;   /* counter */
    Word32 resetFlag = 1;   /* homing frame */
 
-#ifndef ETSI
-#ifndef IF2
-   Word16 q_bit;
-#endif
-#endif
 
    s = ( dec_interface_State * )st;
 
@@ -687,39 +495,34 @@ void Decoder_Interface_Decode( void *st,
     * extract mode information and frametype,
     * octets to parameters
     */
-#ifdef IF2
    mode = Decoder3GPP( prm, bits, &frame_type, &speech_mode );
-#else
-   mode = DecoderMMS( prm, bits, &frame_type, &speech_mode, &q_bit );
-   if (!bfi)	bfi = 1 - q_bit;
-#endif
 
-   if ( bfi == 1 ) {
-      if ( mode <= MR122 ) {
-         frame_type = RX_SPEECH_BAD;
-      }
-      else if ( frame_type != RX_NO_DATA ) {
+   /*
+    * if no mode information
+    * guess one from the previous frame
+    */
+   if ( frame_type == RX_SPEECH_BAD ) {
+      if ( s->prev_ft > 3 ) {
          frame_type = RX_SID_BAD;
+         mode = MRDTX;
+      }
+      else {
          mode = s->prev_mode;
       }
-   } else {
-       if ( frame_type == RX_SID_FIRST || frame_type == RX_SID_UPDATE) {
-           mode = speech_mode;
-       }
-       else if ( frame_type == RX_NO_DATA ) {
-           mode = s->prev_mode;
-       }
-       /*
-        * if no mode information
-        * guess one from the previous frame
-        */
-       if ( frame_type == RX_SPEECH_BAD ) {
-          mode = s->prev_mode;
-          if ( s->prev_ft >= RX_SID_FIRST ) {
-             frame_type = RX_SID_BAD;
-          }
-       }
    }
+   else if ( frame_type == RX_NO_DATA ) {
+      mode = s->prev_mode;
+   }
+
+   if ( bfi == 1 ) {
+      if ( mode < 8 ) {
+         frame_type = RX_SPEECH_BAD;
+      }
+      else if ( mode != 15 ) {
+         frame_type = RX_SID_BAD;
+      }
+   }
+
 #else
    bfi = 0;
    frame_type = bits[0];
@@ -733,12 +536,12 @@ void Decoder_Interface_Decode( void *st,
 
       case 1:
          frame_type = RX_SID_FIRST;
-         mode = bits[245];
+         mode = s->prev_mode;
          break;
 
       case 2:
          frame_type = RX_SID_UPDATE;
-         mode = bits[245];
+         mode = s->prev_mode;
          Bits2Prm( MRDTX, &bits[1], prm );
          break;
 
@@ -747,6 +550,7 @@ void Decoder_Interface_Decode( void *st,
          mode = s->prev_mode;
          break;
    }
+
 #endif
 
    /* test for homing frame */

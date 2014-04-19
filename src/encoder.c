@@ -1,9 +1,8 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  R99   V3.5.0 2003-03
- *  REL-4 V4.5.0 2003-06
- *  REL-5 V5.2.0 2003-06
+ *  R99   V3.4.0 2002-02
+ *  REL-4 V4.3.0 2002-02
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -27,12 +26,6 @@
 #include "typedef.h"
 #include "interf_enc.h"
 
-#ifndef ETSI
-#ifndef IF2
-#define AMR_MAGIC_NUMBER "#!AMR\n"
-#endif
-#endif
-
 static const short modeConv[]={
    475, 515, 59, 67, 74, 795, 102, 122};
 
@@ -50,8 +43,8 @@ void Copyright(void){
 fprintf (stderr,
 "===================================================================\n"
 " TS 26.104                                                         \n"
-" R99   V3.5.0 2003-03                                              \n"
-" REL-4 V4.4.0 2003-03                                              \n"
+" R99   V3.4.0 2002-02                                              \n"
+" REL-4 V4.3.0 2002-02                                              \n"
 " 3GPP AMR Floating-point Speech Encoder                            \n"
 "===================================================================\n"
 );
@@ -113,7 +106,7 @@ int main (int argc, char * argv[]){
 
    /* bitstream filetype */
 #ifndef ETSI
-   unsigned char serial_data[32];
+   unsigned char serial_data[31];
 #else
    short serial_data[250] = {0};
 #endif
@@ -185,14 +178,6 @@ int main (int argc, char * argv[]){
 #else
    fprintf( stderr, "%s\n", "Code compiled with VAD option: VAD2");
 #endif
-
-#ifndef ETSI
-#ifndef IF2
-   /* write magic number to indicate single channel AMR file storage format */
-   	bytes = fwrite(AMR_MAGIC_NUMBER, sizeof(char), strlen(AMR_MAGIC_NUMBER), file_encoded);
-#endif
-#endif
-
    /* read file */
    while (fread( speech, sizeof (Word16), 160, file_speech ) > 0)
    {
@@ -224,11 +209,7 @@ int main (int argc, char * argv[]){
    Encoder_Interface_exit(enstate);
 
 #ifndef ETSI
-#ifdef IF2
    fprintf ( stderr, "\n%s%i%s%i%s\n", "Frame structure AMR IF2: ", frames, " frames, ", bytes, " bytes.");
-#else
-   fprintf ( stderr, "\n%s%i%s%i%s\n", "Frame structure AMR MIME file storage format: ", frames, " frames, ", bytes, " bytes.");
-#endif
 #else
    fprintf ( stderr, "\n%s%i%s\n", "Frame structure AMR ETSI: ", frames, " frames. ");
 #endif

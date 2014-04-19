@@ -1,9 +1,8 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  R99   V3.5.0 2003-03
- *  REL-4 V4.5.0 2003-06
- *  REL-5 V5.2.0 2003-06
+ *  R99   V3.4.0 2002-02
+ *  REL-4 V4.3.0 2002-02
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -15,19 +14,12 @@
 #include "interf_dec.h"
 #include "typedef.h"
 
-#ifndef ETSI
-#ifndef IF2
-#include <string.h>
-#define AMR_MAGIC_NUMBER "#!AMR\n"
-#endif
-#endif
-
 void Copyright(void){
 fprintf (stderr,
 "===================================================================\n"
 " TS 26.104                                                         \n"
-" R99   V3.5.0 2003-03                                              \n"
-" REL-4 V4.4.0 2003-03                                              \n"
+" R99   V3.4.0 2002-02                                              \n"
+" REL-4 V4.3.0 2002-02                                              \n"
 " 3GPP AMR Floating-point Speech Decoder                            \n"
 "===================================================================\n"
 );
@@ -69,14 +61,8 @@ int main (int argc, char * argv[]){
    int * destate;
    int read_size;
 #ifndef ETSI
-   unsigned char analysis[32];
+   unsigned char analysis[31];
    enum Mode dec_mode;
-#ifdef IF2
-   short block_size[16]={ 12, 13, 15, 17, 18, 20, 25, 30, 5, 0, 0, 0, 0, 0, 0, 0 };
-#else
-   char magic[8];
-   short block_size[16]={ 12, 13, 15, 17, 19, 20, 26, 31, 5, 0, 0, 0, 0, 0, 0, 0 };
-#endif
 #else
    short analysis[250];
 #endif
@@ -107,30 +93,45 @@ int main (int argc, char * argv[]){
    destate = Decoder_Interface_init();
 
 #ifndef ETSI
-#ifndef IF2
-   /* read and verify magic number */
-   fread( magic, sizeof( char ), strlen( AMR_MAGIC_NUMBER ), file_analysis );
-   if ( strncmp( magic, AMR_MAGIC_NUMBER, strlen( AMR_MAGIC_NUMBER ) ) ) {
-	   fprintf( stderr, "%s%s\n", "Invalid magic number: ", magic );
-	   fclose( file_speech );
-	   fclose( file_analysis );
-	   return 1;
-   }
-#endif
-#endif
-
-#ifndef ETSI
 
    /* find mode, read file */
    while (fread(analysis, sizeof (unsigned char), 1, file_analysis ) > 0)
    {
-#ifdef IF2
       dec_mode = analysis[0] & 0x000F;
-#else
-      dec_mode = (analysis[0] >> 3) & 0x000F;
-#endif
-	  read_size = block_size[dec_mode];
-
+      switch (dec_mode){
+      case 0:
+         read_size = 12;
+         break;
+      case 1:
+         read_size = 13;
+         break;
+      case 2:
+         read_size = 15;
+         break;
+      case 3:
+         read_size = 17;
+         break;
+      case 4:
+         read_size = 18;
+         break;
+      case 5:
+         read_size = 20;
+         break;
+      case 6:
+         read_size = 25;
+         break;
+      case 7:
+         read_size = 30;
+         break;
+      case 8:
+         read_size = 5;
+         break;
+      case 15:
+         read_size = 0;
+      default:
+         read_size = 0;
+         break;
+      };
       fread(&analysis[1], sizeof (char), read_size, file_analysis );
 #else
 
