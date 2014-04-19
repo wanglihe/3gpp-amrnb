@@ -1,8 +1,8 @@
 /*
  * ===================================================================
  *  TS 26.104
- *  R99   V3.3.0 2001-09
- *  REL-4 V4.2.0 2001-09
+ *  R99   V3.4.0 2002-02
+ *  REL-4 V4.3.0 2002-02
  *  3GPP AMR Floating-point Speech Codec
  * ===================================================================
  *
@@ -7223,10 +7223,6 @@ static void gc_pred( Word32 *past_qua_en, enum Mode mode, Float32 *code,
 
       Log2( ener, &exp, &frac );
       ener = ( ( exp - 30 ) << 16 ) + ( frac << 1 );
-
-
-
-
 
       ener_tmp = 44 * qua_gain_code_MR122[past_qua_en[0]];
       ener_tmp += 37 * qua_gain_code_MR122[past_qua_en[1]];
