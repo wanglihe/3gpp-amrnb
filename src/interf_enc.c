@@ -1,6 +1,8 @@
 /*
  * ===================================================================
- *  TS 26.104 V3.0.0 2000-08
+ *  TS 26.104 
+ *  R99   V3.2.0 2001-06
+ *  REL-4 V4.1.0 2001-06
  *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
@@ -32,32 +34,29 @@
  * Declare structure types
  */
 /* Declaration transmitted frame types */
-enum TXFrameType
-{
-   TX_SPEECH = 0, TX_SID_FIRST, TX_SID_UPDATE, TX_NO_DATA, TX_N_FRAMETYPES
-         /* number of frame types */
+enum TXFrameType { TX_SPEECH_GOOD = 0,
+                   TX_SID_FIRST,
+                   TX_SID_UPDATE,
+                   TX_NO_DATA,
+                   TX_SPEECH_DEGRADED,
+                   TX_SPEECH_BAD,
+                   TX_SID_BAD,
+                   TX_ONSET,
+                   TX_N_FRAMETYPES     /* number of frame types */
 };
 
 /* Declaration of interface structure */
-typedef
-
-struct
+typedef struct
 {
    Word16 sid_update_counter;   /* Number of frames since last SID */
    Word16 sid_handover_debt;   /* Number of extra SID_UPD frames to schedule */
    Word32 dtx;
-
-
    enum TXFrameType prev_ft;   /* Type of the previous frame */
-
    void *encoderState;   /* Points encoder state structure */
+} enc_interface_State;
 
-
-}enc_interface_State;
 
 #ifdef ETSI
-
-
 /*
  * Prm2Bits
  *
@@ -382,7 +381,7 @@ static void Sid_Sync_reset( enc_interface_State *st )
 {
    st->sid_update_counter = 3;
    st->sid_handover_debt = 0;
-   st->prev_ft = TX_SPEECH;
+   st->prev_ft = TX_SPEECH_GOOD;
 }
 
 
@@ -506,7 +505,7 @@ int Encoder_Interface_Encode( void *st, enum Mode mode, Word16 *speech,
    if ( used_mode == MRDTX ) {
       s->sid_update_counter--;
 
-      if ( s->prev_ft == TX_SPEECH ) {
+      if ( s->prev_ft == TX_SPEECH_GOOD ) {
          txFrameType = TX_SID_FIRST;
          s->sid_update_counter = 3;
       }
@@ -534,7 +533,7 @@ int Encoder_Interface_Encode( void *st, enum Mode mode, Word16 *speech,
    }
    else {
       s->sid_update_counter = 8;
-      txFrameType = TX_SPEECH;
+      txFrameType = TX_SPEECH_GOOD;
    }
    s->prev_ft = txFrameType;
 

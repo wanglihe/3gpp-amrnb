@@ -1,6 +1,8 @@
 /*
  * ===================================================================
- *  TS 26.104 V3.0.0 2000-08
+ *  TS 26.104 
+ *  R99   V3.2.0 2001-06
+ *  REL-4 V4.1.0 2001-06
  *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
@@ -240,6 +242,10 @@ static void Decoder_amr_reset( Decoder_amrState *state, enum Mode mode )
 {
    Word32 i;
 
+   /* Cb_gain_average_reset */
+   memset(state->Cb_gain_averState->cbGainHistory, 0, L_CBGAINHIST << 2);
+   state->Cb_gain_averState->hangVar = 0;
+   state->Cb_gain_averState->hangCount= 0;
 
    /* Initialize static pointer */
    state->exc = state->old_exc + PIT_MAX + L_INTERPOL;
@@ -1552,6 +1558,7 @@ static void dtx_dec( dtx_decState *st, Word32 *mem_syn, D_plsfState *lsfState,
        * interpolation to 32 frames
        */
          tmp_int_length = st->since_last_sid;
+         st->since_last_sid = 0;
 
          if ( tmp_int_length > 32 ) {
             tmp_int_length = 32;
@@ -1628,10 +1635,10 @@ static void dtx_dec( dtx_decState *st, Word32 *mem_syn, D_plsfState *lsfState,
 
    /* Interpolate SID info */
    /* Q10 */
-   if ( st->since_last_sid > 31 )
+   if ( st->since_last_sid > 30 )
       int_fac = 32767;
    else
-      int_fac = ( Word16 )( st->since_last_sid << 10 );
+      int_fac = ( Word16 )( (st->since_last_sid + 1) << 10 );
 
    /* Q10 * Q15 -> Q10 */
    int_fac = ( int_fac * st->true_sid_period_inv ) >> 15;
@@ -1741,6 +1748,10 @@ static void dtx_dec( dtx_decState *st, Word32 *mem_syn, D_plsfState *lsfState,
    /* convert exponent and mantissa to Word16 Q12 */
    /* Q12 */
    log_pg = ( log_pg_e - 15 ) << 12;
+   /* saturate */
+   if (log_pg < -32768) {
+      log_pg = -32768;
+   }
    log_pg = ( -( log_pg + ( log_pg_m >> 3 ) ) ) >> 1;
    st->log_pg_mean = ( Word16 )( ( ( 29491*st->log_pg_mean ) >> 15 ) + ( ( 3277
          * log_pg ) >> 15 ) );
@@ -2014,10 +2025,10 @@ static void D_plsf_5( D_plsfState *st, Word16 bfi, Word16 *indice, Word32 *lsp1_
       /* use the past LSFs slightly shifted towards their mean */
       for ( i = 0; i < M; i += 2 ) {
          /* lsfi_q[i] = ALPHA*st->past_lsf_q[i] + ONE_ALPHA*meanLsf[i]; */
-         lsf1_q[i] = ( ( st->past_lsf_q[i] * ALPHA ) >> 15 ) + ( ( mean_lsf_5[i]
-               * ONE_ALPHA ) >> 15 );
-         lsf1_q[i + 1] = ( ( st->past_lsf_q[i + 1] *ALPHA ) >> 15 ) + ( (
-               mean_lsf_5[i + 1] *ONE_ALPHA ) >> 15 );
+         lsf1_q[i] = ( ( st->past_lsf_q[i] * ALPHA_122 ) >> 15 ) + ( ( mean_lsf_5[i]
+               * ONE_ALPHA_122 ) >> 15 );
+         lsf1_q[i + 1] = ( ( st->past_lsf_q[i + 1] * ALPHA_122 ) >> 15 ) + ( (
+               mean_lsf_5[i + 1] * ONE_ALPHA_122 ) >> 15 );
       }
       memcpy( lsf2_q, lsf1_q, M <<2 );
 
@@ -3377,15 +3388,15 @@ static void gc_pred_average_limited( gc_predState *st, Word32 *ener_avg_MR122,
 
    for ( i = 0; i < NPRED; i++ ) {
       av_pred_en = ( av_pred_en + st->past_qua_en[i] );
+      if (av_pred_en < -32768)
+         av_pred_en = -32768;
+      else if (av_pred_en > 32767)
+         av_pred_en = 32767;
    }
 
    /* av_pred_en = 0.25*av_pred_en */
    av_pred_en = ( av_pred_en * 8192 ) >> 15;
 
-   /* if (av_pred_en < -14) av_pred_en = .. */
-   if ( av_pred_en < MIN_ENERGY ) {
-      av_pred_en = MIN_ENERGY;
-   }
    *ener_avg = av_pred_en;
 }
 
@@ -3495,7 +3506,7 @@ static void d_gain_code( gc_predState *pred_state, enum Mode mode, Word32 index,
                         Word32 code[], Word32 *gain_code )
 {
    Word32 g_code0, exp, frac, qua_ener_MR122, qua_ener;
-   Word32 exp_inn_en, frac_inn_en, tmp;
+   Word32 exp_inn_en, frac_inn_en, tmp, tmp2, i;
    const Word32 *p;
 
 
@@ -3524,10 +3535,21 @@ static void d_gain_code( gc_predState *pred_state, enum Mode mode, Word32 index,
       tmp = ( *p++ * g_code0 ) << 1;
       exp = 9 - exp;
 
-      if ( exp > 0 )
+      if ( exp > 0 ) {
          tmp = tmp >> exp;
-      else
-         tmp = tmp << ( -exp );
+      }
+      else {
+         for (i = exp; i < 0; i++) { 
+            tmp2 = tmp << 1;
+            if ((tmp ^ tmp2) & 0x80000000) {
+               tmp = (tmp & 0x80000000) ? 0x80000000 : 0x7FFFFFFF;
+               break;
+            }
+            else {
+               tmp = tmp2;
+            }
+         }
+      }
       *gain_code = tmp >> 16;
       if (*gain_code & 0xFFFF8000)
          *gain_code = 32767;
@@ -3797,7 +3819,7 @@ static void ph_disp( ph_dispState *state, enum Mode mode, Word32 x[],
                     Word32 pitch_fac, Word32 tmp_shift)
 {
    Word32 inno_sav[L_SUBFR], ps_poss[L_SUBFR];
-   Word32 i, i1, impNr, tmp1, temp2, j, nze, nPulse, ppos;
+   Word32 i, i1, impNr, temp1, temp2, j, nze, nPulse, ppos;
    const Word32 *ph_imp;   /* Pointer to phase dispersion filter */
 
 
@@ -3826,9 +3848,9 @@ static void ph_disp( ph_dispState *state, enum Mode mode, Word32 x[],
 
    /* onset indicator */
    /* onset = (cbGain  > onFact * cbGainMem[0]) */
-   tmp1 = ( ( state->prevCbGain * ONFACTPLUS1 ) + 0x1000 ) >> 13;
+   temp1 = ( ( state->prevCbGain * ONFACTPLUS1 ) + 0x1000 ) >> 13;
 
-   if ( cbGain > tmp1 ) {
+   if ( cbGain > temp1 ) {
       state->onset = ONLENGTH;
    }
    else {
@@ -3924,14 +3946,14 @@ static void ph_disp( ph_dispState *state, enum Mode mode, Word32 x[],
 
          for ( i = ppos; i < L_SUBFR; i++ ) {
             /* inno[i1] += inno_sav[ppos] * ph_imp[i1-ppos] */
-            tmp1 = ( inno_sav[ppos] * ph_imp[j++] ) >> 15;
-            inno[i] = inno[i] + tmp1;
+            temp1 = ( inno_sav[ppos] * ph_imp[j++] ) >> 15;
+            inno[i] = inno[i] + temp1;
          }
 
          for ( i = 0; i < ppos; i++ ) {
             /* inno[i] += inno_sav[ppos] * ph_imp[L_SUBFR-ppos+i] */
-            tmp1 = ( inno_sav[ppos] * ph_imp[j++] ) >> 15;
-            inno[i] = inno[i] + tmp1;
+            temp1 = ( inno_sav[ppos] * ph_imp[j++] ) >> 15;
+            inno[i] = inno[i] + temp1;
          }
       }
    }
@@ -3942,11 +3964,18 @@ static void ph_disp( ph_dispState *state, enum Mode mode, Word32 x[],
     */
    for ( i = 0; i < L_SUBFR; i++ ) {
       /* x[i] = gain_pit*x[i] + cbGain*code[i]; */
-      temp2 = x[i] * pitch_fac + inno[i] * cbGain;
-      temp2 = temp2 << tmp_shift;
+      temp1 = x[i] * pitch_fac + inno[i] * cbGain;
+      temp2 = temp1 << tmp_shift;
       x[i] = ( temp2 + 0x4000 ) >> 15;
-      if (labs(x[i]) > 32676)
-         x[i] = (x[i] & 0x80000000) ? -32768: 32767;
+      if (labs(x[i]) > 32767)
+      {
+         if ((temp1 ^ temp2) & 0x80000000) {
+            x[i] = (temp1 & 0x80000000) ? -32768: 32767;
+         }
+         else {
+            x[i] = (temp2 & 0x80000000) ? -32768: 32767;
+         }
+      }
    }
    return;
 }
@@ -4331,7 +4360,7 @@ static Word16 Bgn_scd( Bgn_scdState *st, Word32 ltpGainHist[], Word32 speech[],
       s += speech[i] * speech[i];
    }
 
-   if ( s < 0xFFFFFFF )
+   if ( (s < 0xFFFFFFF) & (s >= 0) )
       currEnergy = s >> 13;
    else
       currEnergy = 32767;
@@ -4577,7 +4606,7 @@ static void Decoder_amr( Decoder_amrState *st, enum Mode mode, Word16 parm[],
          Build_CN_param( &st->nodataSeed, mode, parm );
       }
    }
-   else if ( frame_type == RX_SPEECH_PROBABLY_DEGRADED ) {
+   else if ( frame_type == RX_SPEECH_DEGRADED ) {
       pdfi = 1;
    }
 
@@ -5033,10 +5062,16 @@ static void Decoder_amr( Decoder_amrState *st, enum Mode mode, Word16 parm[],
 
       for ( i = 0; i < L_SUBFR; i++ ) {
          /* st->exc[i] = gain_pit*st->exc[i] + gain_code*code[i]; */
-         temp2 = ( st->exc[i] * pitch_fac ) + ( code[i] * gain_code );
-         temp2 = ( temp2 << tmp_shift );
-         if (((temp2 >> 1) ^ temp2) & 0x40000000)
-            temp2 = (temp2 & 0x80000000) ? (-1073741824L) : 1073725439;
+         temp = ( st->exc[i] * pitch_fac ) + ( code[i] * gain_code );
+         temp2 = ( temp << tmp_shift );
+         if (((temp2 >> 1) ^ temp2) & 0x40000000) {
+            if ((temp ^ temp2) & 0x80000000) {
+               temp2 = (temp & 0x80000000) ? (-1073741824L) : 1073725439;
+            }
+            else {
+               temp2 = (temp2 & 0x80000000) ? (-1073741824L) : 1073725439;
+            }
+         }
          st->exc[i] = ( temp2 + 0x00004000L ) >> 15;
       }
       /*
