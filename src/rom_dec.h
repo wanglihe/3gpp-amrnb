@@ -1,6 +1,8 @@
 /*
  * ===================================================================
- *  TS 26.104 V3.0.0 2000-08
+ *  TS 26.104 
+ *  R99   V3.2.0 2001-06
+ *  REL-4 V4.1.0 2001-06
  *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
@@ -1236,6 +1238,8 @@ static const Word32 mean_lsf_3[10] =
    13714
 };
 
+#define ALPHA_122     31128
+#define ONE_ALPHA_122 1639
 /* LSF means ->normalize frequency domain */
 static const Word32 mean_lsf_5[10] =
 {

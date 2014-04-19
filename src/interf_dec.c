@@ -1,6 +1,8 @@
 /*
  * ===================================================================
- *  TS 26.104 V3.0.0 2000-08
+ *  TS 26.104 
+ *  R99   V3.2.0 2001-06
+ *  REL-4 V4.1.0 2001-06
  *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
@@ -524,25 +526,28 @@ void Decoder_Interface_Decode( void *st,
 #else
    bfi = 0;
    frame_type = bits[0];
-   mode = bits[245];
 
    switch ( frame_type ) {
       case 0:
          frame_type = RX_SPEECH_GOOD;
+         mode = bits[245];
          Bits2Prm( mode, &bits[1], prm );
          break;
 
       case 1:
          frame_type = RX_SID_FIRST;
+         mode = s->prev_mode;
          break;
 
       case 2:
          frame_type = RX_SID_UPDATE;
+         mode = s->prev_mode;
          Bits2Prm( MRDTX, &bits[1], prm );
          break;
 
       case 3:
          frame_type = RX_NO_DATA;
+         mode = s->prev_mode;
          break;
    }
 

@@ -1,6 +1,8 @@
 /*
  * ===================================================================
- *  TS 26.104 V3.0.0 2000-08
+ *  TS 26.104 
+ *  R99   V3.2.0 2001-06
+ *  REL-4 V4.1.0 2001-06
  *  3GPP AMR Floating-point Speech Codec  
  * ===================================================================
  *
@@ -6885,7 +6887,7 @@ static void q_p( Word16 *ind, Word32 n )
  *
  *    where y(n) = v(n) * h(n) is the filtered adaptive codebook vector
  *    and Gp' is the quantified adaptive codebook gain. This is done
- *    allready in function cl_ltp.
+ *    already in function cl_ltp.
  *
  *    If c(k) is the algebraic codevector at index k, then
  *    the algebraic codebook is searched by maximizing the term:
@@ -8511,8 +8513,10 @@ static void gainQuant( enum Mode mode, Word32 even_subframe, Word32 *
           */
 
          gcode0 = (Float32)Pow2( exp, frac );
+         /* saturation at decoder */
+         if (gcode0 > 2047.9375F) gcode0 = 2047.9375F;
 
-         *gain_cod = (Float32)(Dotproduct40( xn2, y2 ) / ( Dotproduct40( y2, y2 )+0.01F ));
+         *gain_cod = (Float32)(Dotproduct40( xn2, y2 ) / ( Dotproduct40( y2, y2 )+ 0.01F ));
 
          if ( *gain_cod < 0 )
             *gain_cod = 0.0F;
